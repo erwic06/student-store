@@ -2,7 +2,9 @@
     "orders": [
       {
         "order_id": 1,
-        "customer_id": 101,
+        "name": "Ada Lovelace",
+        "email": "ada@college.edu",
+        "dormNumber": "B12",
         "total_price": 89.97,
         "status": "completed",
         "created_at": "2023-04-06T10:00:00Z",
@@ -21,7 +23,9 @@
       },
       {
         "order_id": 2,
-        "customer_id": 102,
+        "name": "Alan Turing",
+        "email": "alan@college.edu",
+        "dormNumber": "A7",
         "total_price": 61.98,
         "status": "pending",
         "created_at": "2023-04-07T15:30:00Z",
@@ -45,4 +49,3 @@
       }
     ]
   }
-  

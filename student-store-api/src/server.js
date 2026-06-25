@@ -1,5 +1,6 @@
 const express = require("express")
 const Product = require("./models/product")
+const Order = require("./models/order")
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -77,6 +78,57 @@ app.delete("/products/:id", async (req, res) => {
       return res.status(404).json({ error: "Product not found" })
     }
     await Product.delete(id)
+    res.status(204).send()
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ---- Orders ----
+
+app.get("/orders", async (req, res) => {
+  try {
+    const orders = await Order.getAll()
+    res.status(200).json(orders)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.get("/orders/:id", async (req, res) => {
+  try {
+    const order = await Order.getById(Number(req.params.id))
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" })
+    }
+    res.status(200).json(order)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.put("/orders/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id)
+    const existing = await Order.getById(id)
+    if (!existing) {
+      return res.status(404).json({ error: "Order not found" })
+    }
+    const updated = await Order.update(id, req.body)
+    res.status(200).json(updated)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.delete("/orders/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id)
+    const existing = await Order.getById(id)
+    if (!existing) {
+      return res.status(404).json({ error: "Order not found" })
+    }
+    await Order.delete(id)
     res.status(204).send()
   } catch (err) {
     res.status(500).json({ error: err.message })

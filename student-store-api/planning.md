@@ -38,8 +38,8 @@
 |-------|-------------|-----------|---------|-------|
 | id | Int | yes (PK) | `@default(autoincrement())` | Primary key |
 | name | String | yes | — | Customer name from checkout form |
-| email | String | yes | — | Powers the email-filter stretch feature |
-| dormNumber | String | no | — | Collected by frontend (`dorm_number`) |
+| email | String? | no | — | Optional; the email-filter stretch was dropped, so the checkout form collects no email |
+| dormNumber | String? | no | — | Optional; collected by frontend (`dorm_number`) |
 | totalPrice | Float | yes | — | Computed server-side during order creation |
 | status | String | yes | `@default("pending")` | String is fine per guide |
 | createdAt | DateTime | yes | `@default(now())` | Auto-populated |
@@ -126,7 +126,7 @@ relations defined in OrderItem.
 ### Orders
 
 #### GET /orders
-- **Request:** optional `?email=` filter (stretch feature).
+- **Request:** none. (The `?email=` filter stretch was dropped; `email` is now optional.)
 - **Success:** `200` → `[ Order, ... ]`.
 - **Error:** `500` → `{ "error": "..." }`.
 
