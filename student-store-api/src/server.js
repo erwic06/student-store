@@ -2,6 +2,8 @@ const express = require("express")
 const Product = require("./models/product")
 const Order = require("./models/order")
 const { OrderValidationError } = Order
+const OrderItem = require("./models/orderItem")
+const { OrderItemError } = OrderItem
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -145,6 +147,31 @@ app.delete("/orders/:id", async (req, res) => {
     await Order.delete(id)
     res.status(204).send()
   } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ---- OrderItems (stretch) ----
+
+app.get("/order-items", async (req, res) => {
+  try {
+    const items = await OrderItem.getAll()
+    res.status(200).json(items)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post("/orders/:orderId/items", async (req, res) => {
+  try {
+    const orderId = Number(req.params.orderId)
+    const { productId, quantity } = req.body
+    const item = await OrderItem.addToOrder(orderId, { productId, quantity })
+    res.status(201).json(item)
+  } catch (err) {
+    if (err instanceof OrderItemError) {
+      return res.status(err.status).json({ error: err.message })
+    }
     res.status(500).json({ error: err.message })
   }
 })

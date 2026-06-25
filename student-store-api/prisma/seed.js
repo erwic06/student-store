@@ -7,10 +7,14 @@ async function seed() {
   try {
     console.log('🌱 Seeding database...\n')
 
-    // Clear existing data (children first due to FK relations)
+    // Clear existing data (children first due to FK relations) and reset autoincrement
+    // sequences so reseeds produce stable IDs (Product 1..9, Order 1..N, OrderItem 1..M).
     await prisma.orderItem.deleteMany()
     await prisma.order.deleteMany()
     await prisma.product.deleteMany()
+    await prisma.$executeRawUnsafe('ALTER SEQUENCE "Product_id_seq" RESTART WITH 1')
+    await prisma.$executeRawUnsafe('ALTER SEQUENCE "Order_id_seq" RESTART WITH 1')
+    await prisma.$executeRawUnsafe('ALTER SEQUENCE "OrderItem_id_seq" RESTART WITH 1')
 
     // Load JSON data
     const productsData = JSON.parse(
@@ -36,13 +40,19 @@ async function seed() {
     }
 
     // Seed orders and their items (camelCase Order shape; price = purchase-time price).
+    // Compute totalPrice from items so seed data is internally consistent.
     for (const order of ordersData.orders) {
+      const totalPrice = order.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      )
+
       const createdOrder = await prisma.order.create({
         data: {
           name: order.name,
           email: order.email,
           dormNumber: order.dormNumber,
-          totalPrice: order.total_price,
+          totalPrice,
           status: order.status,
           createdAt: new Date(order.created_at),
           orderItems: {

@@ -168,6 +168,24 @@ relations defined in OrderItem.
 - **Success:** `204` (no body).
 - **Error:** `404` → `{ "error": "Order not found" }`.
 
+### Added Endpoints (stretch)
+
+#### GET /order-items
+- **Request:** none.
+- **Success:** `200` → `[ OrderItem, ... ]` (all order items, every order).
+- **Error:** `500` → `{ "error": "..." }`.
+
+#### POST /orders/:orderId/items
+> Add a single item to an existing order. The parent order's `totalPrice` is
+> recomputed and persisted in the same transaction.
+
+- **Request:** route param `orderId`; body `{ productId, quantity }`.
+- **Success:** `201` → the created `OrderItem`.
+- **Error:**
+  - `404` → `{ "error": "Order not found" }`.
+  - `404` → `{ "error": "Product not found" }`.
+  - `400` → `{ "error": "productId and quantity are required" }`.
+
 ---
 
 ## Section 3: Transactional Flow — POST /orders
