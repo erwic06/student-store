@@ -219,6 +219,21 @@ unchanged, and the response is `400 { "error": "Product <id> does not exist" }`.
 
 ---
 
+## Decisions Log — Product Model
+
+- **Schema translation that went smoothly:** `price` as `Float` maps cleanly to Postgres
+  `double precision`; fine for this project's currency values.
+- **Field decision made during implementation:** kept Product to exactly the six spec fields
+  (no `@updatedAt`/timestamps) — the frontend doesn't need them and the spec is the contract.
+- **Shared client decision:** introduced `src/prisma.js` exporting a single `PrismaClient`
+  instance, imported by every model, instead of instantiating per model (avoids multiple
+  connection pools). The seed script keeps its own client since it runs as a standalone process.
+- **Infra fixes folded in:** moved `seed.js` → `prisma/seed.js` so its `../data` paths resolve,
+  set `package.json` `prisma.seed` to `node prisma/seed.js`, and pinned the `prisma` CLI to
+  `6.19.3` to match `@prisma/client` (bare `npx prisma` pulled CLI v7, a cross-major mismatch).
+- **Route behavior:** `DELETE` returns `204` no-body; `GET/:id`, `PUT`, `DELETE` return
+  `404 { error: "Product not found" }`; `POST` validates all five fields → `400`. No spec change.
+
 ## Follow-on flags (later milestones)
 
 - **Milestone 1:** `.env` `DATABASE_URL` must hold real local values before any migration.
