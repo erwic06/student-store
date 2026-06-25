@@ -89,9 +89,18 @@ relations defined in OrderItem.
 ### Products
 
 #### GET /products
-- **Request:** optional query params (documented in Milestone 2).
+- **Request:** optional query params (see below).
 - **Success:** `200` → `[ Product, ... ]`.
 - **Error:** `500` → `{ "error": "..." }`.
+
+##### Query Parameters
+| Param | Values | Behavior |
+|-------|--------|----------|
+| `category` | any category string (e.g. `Apparel`) | Filters to products in that exact category. An unmatched value returns `[]` (not an error). |
+| `sort` | `price` \| `name` | Orders results ascending by that field. Any other/empty value is ignored. |
+
+- **Default (no params):** return all products, unordered (DB insertion order).
+- Params combine: `?category=Apparel&sort=price` filters then sorts.
 
 #### GET /products/:id
 - **Request:** route param `id`.
