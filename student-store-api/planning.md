@@ -243,6 +243,20 @@ unchanged, and the response is `400 { "error": "Product <id> does not exist" }`.
 - **Route behavior:** `DELETE` returns `204` no-body; `GET/:id`, `PUT`, `DELETE` return
   `404 { error: "Product not found" }`; `POST` validates all five fields → `400`. No spec change.
 
+## Spec Reconciliation — Milestone 4 (Schema Audit)
+
+### Schema vs. spec gaps found
+- No field gaps. Product, Order, and OrderItem each match Section 1 exactly (six / seven /
+  five fields respectively, types and defaults as documented).
+- Back-relation fields (`Product.orderItems`, `Order.orderItems`) appear in `schema.prisma`
+  but not in the spec tables. These are relation accessors, not database columns — Prisma
+  requires them for the FK relations on OrderItem to compile. Treated as implementation
+  detail, not a spec gap.
+
+### Cascade delete verification
+- Deleting a Product removes associated OrderItems: ✅ tested (productId=1 → 1 item → 0).
+- Deleting an Order removes associated OrderItems: ✅ tested (order 3 → 3 items → 0).
+
 ## Follow-on flags (later milestones)
 
 - **Milestone 1:** `.env` `DATABASE_URL` must hold real local values before any migration.

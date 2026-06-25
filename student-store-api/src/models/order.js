@@ -6,8 +6,10 @@ class Order {
   }
 
   static async getById(id) {
-    // Nested orderItems include is added in Milestone 4 once OrderItem exists.
-    return prisma.order.findUnique({ where: { id } })
+    return prisma.order.findUnique({
+      where: { id },
+      include: { orderItems: true },
+    })
   }
 
   static async update(id, data) {
