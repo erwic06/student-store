@@ -1,6 +1,7 @@
 const express = require("express")
 const Product = require("./models/product")
 const Order = require("./models/order")
+const { OrderValidationError } = Order
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -91,6 +92,19 @@ app.get("/orders", async (req, res) => {
     const orders = await Order.getAll()
     res.status(200).json(orders)
   } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+app.post("/orders", async (req, res) => {
+  try {
+    const { name, email, dormNumber, items } = req.body
+    const order = await Order.create({ name, email, dormNumber, items })
+    res.status(201).json(order)
+  } catch (err) {
+    if (err instanceof OrderValidationError) {
+      return res.status(400).json({ error: err.message })
+    }
     res.status(500).json({ error: err.message })
   }
 })

@@ -243,6 +243,25 @@ unchanged, and the response is `400 { "error": "Product <id> does not exist" }`.
 - **Route behavior:** `DELETE` returns `204` no-body; `GET/:id`, `PUT`, `DELETE` return
   `404 { error: "Product not found" }`; `POST` validates all five fields → `400`. No spec change.
 
+## Decisions Log — Order Creation Transaction
+
+- **What the Transactional Flow spec got right:** the six-step ordering (validate → lookup
+  products → compute total → create Order → create OrderItems → return with items) translated
+  to code 1:1. Doing it all inside one `prisma.$transaction(async tx => …)` and using nested
+  `orderItems.create` keeps it to a single transactional Order create call.
+- **What the spec missed (and is now fixed in code):** the spec mentioned an empty-`items`
+  guard inline (step 1) but didn't separate it from "client fault" vs "server fault" errors.
+  Introduced `OrderValidationError` so the route can map *only* those throws to `400` and any
+  other failure stays `500`. Empty items, missing product → 400; DB outage → 500.
+- **How the transaction error handling works:** `prisma.$transaction` runs all queries on a
+  single connection inside a real Postgres `BEGIN`/`COMMIT`. Any throw inside the callback
+  causes `ROLLBACK` — the Order row and any half-written OrderItem rows are discarded. That
+  is why a bad `productId` leaves the orders count unchanged.
+- **One thing I would design differently:** the model layer currently knows about HTTP-shaped
+  validation messages (`"Product 99 does not exist"`). For a larger system I would have it
+  throw a structured `{ code: "PRODUCT_NOT_FOUND", productId }` and let the route format the
+  message. Acceptable here because the spec dictates the exact wire string.
+
 ## Spec Reconciliation — Milestone 4 (Schema Audit)
 
 ### Schema vs. spec gaps found
