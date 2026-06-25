@@ -1,4 +1,5 @@
 const express = require("express")
+const cors = require("cors")
 const Product = require("./models/product")
 const Order = require("./models/order")
 const { OrderValidationError } = Order
@@ -8,6 +9,7 @@ const { OrderItemError } = OrderItem
 const app = express()
 const PORT = process.env.PORT || 3000
 
+app.use(cors())
 app.use(express.json())
 
 app.get("/", (req, res) => {

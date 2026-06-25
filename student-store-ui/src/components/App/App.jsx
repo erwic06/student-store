@@ -9,13 +9,15 @@ import NotFound from "../NotFound/NotFound";
 import { removeFromCart, addToCart, getQuantityOfItemInCart, getTotalItemsInCart } from "../../utils/cart";
 import "./App.css";
 
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
 function App() {
 
   // State variables
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All Categories");
   const [searchInputValue, setSearchInputValue] = useState("");
-  const [userInfo, setUserInfo] = useState({ name: "", dorm_number: ""});
+  const [userInfo, setUserInfo] = useState({ name: "", dormNumber: "" });
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState({});
   const [isFetching, setIsFetching] = useState(false);
@@ -36,7 +38,37 @@ function App() {
     setSearchInputValue(event.target.value);
   };
 
+  useEffect(() => {
+    let cancelled = false;
+    setIsFetching(true);
+    axios
+      .get(`${API_BASE_URL}/products`)
+      .then((res) => { if (!cancelled) setProducts(res.data); })
+      .catch((err) => { if (!cancelled) setError(err.message); })
+      .finally(() => { if (!cancelled) setIsFetching(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   const handleOnCheckout = async () => {
+    setIsCheckingOut(true);
+    setError(null);
+    try {
+      const items = Object.entries(cart).map(([productId, quantity]) => ({
+        productId: Number(productId),
+        quantity,
+      }));
+      const res = await axios.post(`${API_BASE_URL}/orders`, {
+        name: userInfo.name,
+        dormNumber: userInfo.dormNumber,
+        items,
+      });
+      setOrder(res.data);
+      setCart({});
+    } catch (err) {
+      setError(err?.response?.data?.error || err.message);
+    } finally {
+      setIsCheckingOut(false);
+    }
   }
 
 

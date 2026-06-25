@@ -261,6 +261,60 @@ unchanged, and the response is `400 { "error": "Product <id> does not exist" }`.
 - **Route behavior:** `DELETE` returns `204` no-body; `GET/:id`, `PUT`, `DELETE` return
   `404 { error: "Product not found" }`; `POST` validates all five fields → `400`. No spec change.
 
+## Final Spec Reconciliation: Project Complete
+
+### Full-system audit result
+- All required endpoints (5 product, 5 order) match the API contract: status codes, body
+  shapes, error shapes (`{ error }`), and DELETE returning `204` no-body.
+- Stretch endpoints (`GET /order-items`, `POST /orders/:orderId/items`) match the contract
+  added to Section 2.
+- `POST /orders` follows Section 3 step-for-step (validate → product lookup → server-side
+  totalPrice → Order create → OrderItems create → return with items), all inside one
+  `prisma.$transaction`. Failure cases verified leave the orders count unchanged.
+- Cascade rules from Section 1 verified end-to-end: deleting a Product removes its
+  OrderItems; deleting an Order removes its OrderItems.
+
+### Gaps resolved during frontend integration
+- **Frontend used snake_case `image_url`** but the API contract is camelCase `imageUrl`.
+  Updated `ProductCard.jsx` and `ProductDetail.jsx` to read `imageUrl`. The spec was already
+  camelCase — no change there.
+- **`CheckoutSuccess.jsx` expected `order.purchase.receipt.lines`** which the API never
+  produces. Rewrote it to render directly from the `Order` shape the API returns
+  (`id`, `name`, `totalPrice`, `orderItems[]`). The spec stays the source of truth.
+- **`PaymentInfo.jsx` field-mapping bug:** its second input bound `value=userInfo.id` but
+  wrote `email`. Per the email-optional decision and the form having only two inputs, mapped
+  the second field to `dormNumber`. Also renamed `userInfo.dorm_number` → `dormNumber` in
+  `App.jsx` for camelCase consistency with the API.
+- **`handleOnCheckout` was empty.** Implemented it to POST `{ name, dormNumber, items }` to
+  `/orders`, transforming `cart` (`{ productId: quantity }`) into the API's
+  `[{ productId, quantity }]`. `email` is omitted (optional per the M3 spec change).
+- **`ProductDetail` had no fetch.** Added a `useEffect` calling `GET /products/:productId`.
+- **`App.jsx` had no products fetch.** Added an `useEffect` calling `GET /products` on mount.
+- **API base URL** consolidated to `API_BASE_URL` exported from `App.jsx`, defaulting to
+  `http://localhost:3000` but overridable via `VITE_API_BASE_URL` for deployment.
+- **CORS** was missing from the backend; added `cors()` middleware. Documented here as an
+  implementation note that the spec didn't call out.
+- **Hard-coded port** in `server.js` was already changed to `process.env.PORT || 3000` during
+  M1, in preparation for Render.
+
+### Verification
+- Curl-driven smoke against the live stack (backend on 3000, vite on 5173) passed for
+  `GET /products`, `GET /products/:id`, and `POST /orders` (request from `Origin:
+  http://localhost:5173` accepted by CORS, response is 201 with computed totalPrice and
+  nested `orderItems`).
+- `vite build` succeeds — no JSX/import errors.
+- Browser-driven click-through was **not** performed in this session (CLI environment).
+  Manual verification step: open `http://localhost:5173`, browse products, add to cart,
+  enter name + dorm number, submit, expect a receipt with order id + items + total.
+
+### What the spec enabled during this project
+- Section 1 (data models) drove the migrations 1:1 and made the M4 schema audit
+  straightforward — every field already had a documented type and required/optional flag.
+- Section 3 (Transactional Flow) collapsed M5 to a transcription job: the six numbered
+  steps became six lines of code inside one `$transaction`.
+- The `{ "error": "message" }` error contract made route handlers boilerplate; every
+  endpoint already knew what shape to return for which failure case.
+
 ## Decisions Log — Order Creation Transaction
 
 - **What the Transactional Flow spec got right:** the six-step ordering (validate → lookup
