@@ -17,7 +17,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All Categories");
   const [searchInputValue, setSearchInputValue] = useState("");
-  const [userInfo, setUserInfo] = useState({ name: "", dormNumber: "" });
+  const [userInfo, setUserInfo] = useState({ name: "", dorm_number: "" });
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState({});
   const [isFetching, setIsFetching] = useState(false);
@@ -53,13 +53,13 @@ function App() {
     setIsCheckingOut(true);
     setError(null);
     try {
-      const items = Object.entries(cart).map(([productId, quantity]) => ({
-        productId: Number(productId),
+      const items = Object.entries(cart).map(([product_id, quantity]) => ({
+        product_id: Number(product_id),
         quantity,
       }));
       const res = await axios.post(`${API_BASE_URL}/orders`, {
         name: userInfo.name,
-        dormNumber: userInfo.dormNumber,
+        dorm_number: userInfo.dorm_number,
         items,
       });
       setOrder(res.data);

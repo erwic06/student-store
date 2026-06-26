@@ -42,19 +42,19 @@ app.get("/products/:id", async (req, res) => {
 
 app.post("/products", async (req, res) => {
   try {
-    const { name, description, price, imageUrl, category } = req.body
+    const { name, description, price, image_url, category } = req.body
     if (
       name === undefined ||
       description === undefined ||
       price === undefined ||
-      imageUrl === undefined ||
+      image_url === undefined ||
       category === undefined
     ) {
       return res.status(400).json({
-        error: "Missing required field: name, description, price, imageUrl, category",
+        error: "Missing required field: name, description, price, image_url, category",
       })
     }
-    const product = await Product.create({ name, description, price, imageUrl, category })
+    const product = await Product.create({ name, description, price, image_url, category })
     res.status(201).json(product)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -102,8 +102,8 @@ app.get("/orders", async (req, res) => {
 
 app.post("/orders", async (req, res) => {
   try {
-    const { name, email, dormNumber, items } = req.body
-    const order = await Order.create({ name, email, dormNumber, items })
+    const { name, email, dorm_number, items } = req.body
+    const order = await Order.create({ name, email, dorm_number, items })
     res.status(201).json(order)
   } catch (err) {
     if (err instanceof OrderValidationError) {
@@ -167,8 +167,8 @@ app.get("/order-items", async (req, res) => {
 app.post("/orders/:orderId/items", async (req, res) => {
   try {
     const orderId = Number(req.params.orderId)
-    const { productId, quantity } = req.body
-    const item = await OrderItem.addToOrder(orderId, { productId, quantity })
+    const { product_id, quantity } = req.body
+    const item = await OrderItem.addToOrder(orderId, { product_id, quantity })
     res.status(201).json(item)
   } catch (err) {
     if (err instanceof OrderItemError) {

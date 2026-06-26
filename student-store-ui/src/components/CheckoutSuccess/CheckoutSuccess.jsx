@@ -12,16 +12,16 @@ const CheckoutSuccess = ({ order, setOrder, products = [] }) => {
     <>
       <p className="header">Order #{order.id} — {order.name}</p>
       <ul className="purchase">
-        {order.orderItems.map((item) => {
-          const product = productById.get(item.productId)
-          const name = product ? product.name : `Product #${item.productId}`
+        {order.order_items.map((item) => {
+          const product = productById.get(item.product_id)
+          const name = product ? product.name : `Product #${item.product_id}`
           return (
             <li key={item.id}>
               {name} × {item.quantity} @ {formatPrice(item.price)}
             </li>
           )
         })}
-        <li><strong>Total: {formatPrice(order.totalPrice)}</strong></li>
+        <li><strong>Total: {formatPrice(order.total_price)}</strong></li>
       </ul>
     </>
   )

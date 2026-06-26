@@ -1,3 +1,10 @@
 node_modules
 # Keep environment variables out of version control
 .env
+
+# Local-only docs (not for submission)
+student-store-api/guide.md
+student-store-api/walkthrough.md
+build_demo.py
+demo.md
+demo.pptx

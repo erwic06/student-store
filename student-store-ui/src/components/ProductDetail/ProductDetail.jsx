@@ -50,7 +50,7 @@ function ProductDetail({ addToCart, removeFromCart, getQuantityOfItemInCart }) {
     <div className="ProductDetail">
       <div className="product-card">
         <div className="media">
-          <img src={product.imageUrl || "/placeholder.png"} alt={product.name} />
+          <img src={product.image_url || "/placeholder.png"} alt={product.name} />
         </div>
         <div className="product-info">
           <p className="product-name">{product.name}</p>
